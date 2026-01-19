@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import socket from "./socket";
+import QueryEditor from "./QueryEditor";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -15,7 +17,8 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
-const Dashboard = () => {
+const Dashboard = ({ queryHistory, onQueryExecute }) => {
+  const navigate = useNavigate();
   const [metrics, setMetrics] = useState([]);
   const [stats, setStats] = useState({ SELECT: 0, INSERT: 0, UPDATE: 0, avgLatency: 0, total: 0, successRate: 0 });
   const LATENCY_THRESHOLD = 10; // Alert threshold in ms
@@ -163,6 +166,26 @@ const Dashboard = () => {
     WebkitTextFillColor: 'transparent',
     marginBottom: '10px',
     letterSpacing: '-0.5px'
+  };
+
+  const headerButtonsStyle = {
+    display: 'flex',
+    gap: '15px',
+    justifyContent: 'center',
+    marginBottom: '20px',
+    flexWrap: 'wrap'
+  };
+
+  const historyButtonStyle = {
+    padding: '10px 20px',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: '600',
+    fontSize: '0.95rem',
+    transition: 'all 0.3s ease',
   };
 
   const subtitleStyle = {
@@ -347,7 +370,26 @@ const Dashboard = () => {
       
       <div style={dashboardStyle}>
         <h1 style={titleStyle}>Live Query Simulator</h1>
+        <div style={headerButtonsStyle}>
+          <button
+            onClick={() => navigate("/history")}
+            style={historyButtonStyle}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "translateY(-2px)";
+              e.target.style.boxShadow = "0 4px 12px rgba(102, 126, 234, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "translateY(0)";
+              e.target.style.boxShadow = "none";
+            }}
+          >
+            📋 View Query History ({queryHistory.length})
+          </button>
+        </div>
         <p style={subtitleStyle}>Real-time Database Query Performance Monitor</p>
+        
+        {/* SQL Query Editor */}
+        <QueryEditor onQueryExecute={onQueryExecute} />
         
         <div style={statsContainerStyle}>
           <div className="stat-card" style={statCardStyle('linear-gradient(135deg, #2563eb 0%, #1e40af 100%)')}>
